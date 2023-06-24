@@ -59,20 +59,20 @@ ref_map.pl -T 15 --samples ./bam_files_q20_sorted -o ./6_refmap --popmap ./6_ref
 populations -P ./6_refmap -O ./bam_files_q20_sorted -M ./pops.txt -t 15 -r 0.75 --min-maf 0.05 --write-single-snp --fstats --hwe --structure --genepop --plink --vcf --fasta -k –verbose
 
 # Use plink to filter SNP set
-## indep pairwise-linkage
-plink –file ./populations.plink --allow-no-sex --allow-extra-chr --indep-pairwise 25 10 0.9
+  ## indep pairwise-linkage
+  plink –file ./populations.plink --allow-no-sex --allow-extra-chr --indep-pairwise 25 10 0.9
 
-## Extract SNP data
-plink --file ./populations.plink --extract plink.prune.in --allow-extra-chr --make-bed –out albo_prune
+  ## Extract SNP data
+  plink --file ./populations.plink --extract plink.prune.in --allow-extra-chr --make-bed –out albo_prune
 
-## Format output in vcf format, remove high missing samples
-plink --bfile albo_prune --allow-extra-chr --recode vcf --out albo_plink
+  ## Format output in vcf format, remove high missing samples
+  plink --bfile albo_prune --allow-extra-chr --recode vcf --out albo_plink
 
-## Format output in structure format
-plink --bfile albo _prune --allow-extra-chr --recode structure --out albo_plink
+  ## Format output in structure format
+  plink --bfile albo _prune --allow-extra-chr --recode structure --out albo_plink
 
-## Check missing data for each individual
-plink --bfile albo_prune --allow-extra-chr --missing --allow-no-sex –out albo_postprune
+  ## Check missing data for each individual
+  plink --bfile albo_prune --allow-extra-chr --missing --allow-no-sex –out albo_postprune
 
 # Calculate basic popgen statistics (e.g., heterozygosity, inbreeding coefficient)
 Please refer to heterozygosity.R
@@ -87,37 +87,38 @@ Please refer to PCA.R
 Please refer to partial_mantel_test.R
 
 # Admixture analysis
-## Make first column a bunch of zeros
-awk '{$1=0;print $0}' ./albo_prune.bim > ./albo_prune_format.bim
-rm albo_prune.bim
-mv albo_prune_format.bim albo_prune.bim
+  ## Make first column a bunch of zeros
+  awk '{$1=0;print $0}' ./albo_prune.bim > ./albo_prune_format.bim
+  rm albo_prune.bim
+  mv albo_prune_format.bim albo_prune.bim
 
-## Run admixture
-admixture ./albo_prune.bed 2
+  ## Run admixture
+  admixture ./albo_prune.bed 2
 
-## To choose the correct value for k, use ADMIXTURE cross validation procedure
-for K in 1 2 3 4 5
-do
-admixture --cv albo_prune.bed $K | tee log${K}.out
-done
+  ## To choose the correct value for k, use ADMIXTURE cross validation procedure
+  for K in 1 2 3 4 5
+  do
+  admixture --cv albo_prune.bed $K | tee log${K}.out
+  done
 
-## To view CV errors. Lowest error = best K value
-grep -h CV log*.out > CV_error.txt
+  ## To view CV errors. Lowest error = best K value
+  grep -h CV log*.out > CV_error.txt
+
 # STRUCTURE analysis
 structure_threader run -K 2 -R 4 -i ./albo -o ./albo_structure -t 8 -st ./structure --params ./mainparams
 
 # Demographic history analysis
-## SNP calling with angsd
-./angsd -bam ./bam.filelist -out ./sfs -anc ./GCA_001444175.1_A.albopictus_v1.0_genomic_RepeatMasked.fasta -GL 1 -doCounts 1 -dosaf 1 -doDepth 1 -nThreads 8 -dumpCounts 1 -minMapQ 20 -minQ 20
+  ## SNP calling with angsd
+  ./angsd -bam ./bam.filelist -out ./sfs -anc ./GCA_001444175.1_A.albopictus_v1.0_genomic_RepeatMasked.fasta -GL 1 -doCounts 1 -dosaf 1 -doDepth 1 -nThreads 8 -    dumpCounts 1 -minMapQ 20 -minQ 20
 
-## Calculate site frequency spectrum
-./angsd/misc/realSFS -P 8 ./sfs.saf.idx -fold 1 > ./folded.sfs
+  ## Obtain site frequency spectrum
+  ./angsd/misc/realSFS -P 8 ./sfs.saf.idx -fold 1 > ./folded.sfs
 
-## Stairway plot2
-java -cp stairway_plot_es Stairbuilder albo.blueprint
-bash albo.blueprint.sh
+  ## Stairway plot2
+  java -cp stairway_plot_es Stairbuilder albo.blueprint
+  bash albo.blueprint.sh
 
-# refer to plot.stairwayplot2.R for code to generate  graph
+  ## Refer to plot.stairwayplot2.R for code to generate  graph
 
 # Landscape genetic anaylsis with ResDisMapper
 Please refer to ResDisMapper.R
